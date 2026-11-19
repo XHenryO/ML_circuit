@@ -366,7 +366,7 @@ def netlist_to_graph(netlist_content, values):
 
 # Main function to process all netlists
 def process_all_netlists(root_dir):
-    """Iterates through all netlists in dataset and saves graphs."""      
+    """Iterates through all netlists in dataset and saves graphs. 遍历5种类型放大器"""
     for circuit_type in os.listdir(root_dir):
         circuit_path = os.path.join(root_dir, circuit_type)
 
@@ -375,12 +375,16 @@ def process_all_netlists(root_dir):
         
         print(f"Processing circuit type: {circuit_type}")
 
+        # 提取各个类型下具体的电路，当然只是文件夹
         for subfolder in os.listdir(circuit_path):
             subfolder_path = os.path.join(circuit_path, subfolder)
 
             if not os.path.isdir(subfolder_path):
                 continue  # Skip files like .DS_Store
 
+            """
+            netlist
+            """
             netlist_path = os.path.join(subfolder_path, "netlist")
             csv_path = os.path.join(subfolder_path, "dataset.csv")
 
@@ -404,8 +408,8 @@ def process_all_netlists(root_dir):
 
 
 def netlist_to_pyg_graph(data_path):
-    values = load_values(data_path)
-    netlist = load_netlist(data_path)
-    netlist_graph = netlist_to_graph(netlist, values)
-    pyg_data, node_mapping, edge_attr_dict = networkx_to_pyg(netlist_graph)
+    values = load_values(data_path)   # read value.yaml, 读取是固定值的参数
+    netlist = load_netlist(data_path)    # netlist = file.readlines()       把网表中的每一行读取成字符串，保存在一个列表里
+    netlist_graph = netlist_to_graph(netlist, values)    # 将电路转换成 nx.MultiGraph()
+    pyg_data, node_mapping, edge_attr_dict = networkx_to_pyg(netlist_graph)     # 图转换成 GNN 所用的数据结构
     return pyg_data, node_mapping, edge_attr_dict
