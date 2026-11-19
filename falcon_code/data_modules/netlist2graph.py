@@ -25,16 +25,16 @@ def preprocess_netlist(netlist_content):
 
     for line in netlist_content:
 
-        if line.startswith('//') or line.strip() == '':
+        if line.startswith('//') or line.strip() == '':  # 如果是注释行或者空行，就不执行下面的代码，直接处理下一行
             continue
 
         # Strip leading and trailing whitespace
-        line = line.strip()
+        line = line.strip()  # 删除字符串首尾的空白字符
         
         # Check if the line ends with a backslash (\), indicating continuation
         if line.endswith("\\"):
             # Add the current line to the buffer, removing the backslash
-            buffer += line[:-1] + ""  # Remove '\' and add a space
+            buffer += line[:-1] + ""  # Remove '\' and add a space ，   从字符串开头取到倒数第二个字符，删除最后一个字符
         else:
             # Add the final part of the line to the buffer
             buffer += line
@@ -279,10 +279,10 @@ def netlist_to_graph(netlist_content, values):
                              where nodes represent circuit nodes and edges represent components.
     """
     # Initialize a MultiGraph to allow multiple edges between nodes
-    G = nx.MultiGraph()
+    G = nx.MultiGraph()  #如注释，创建一个空图
 
     # Preprocess the netlist to handle multi-line entries
-    netlist_content = preprocess_netlist(netlist_content)
+    netlist_content = preprocess_netlist(netlist_content)  # 将 Netlist 中跨越多行的器件描述合并成一
 
     # Iterate over each line in the netlist
     for line in netlist_content:
@@ -290,7 +290,7 @@ def netlist_to_graph(netlist_content, values):
         if line.startswith('//') or line.strip() == '':
             continue
 
-        # Parse the line into component name, nodes, type, and attributes
+        # Parse the line into component name, nodes, type, and attributes   把一整行 Netlist 拆解成器件名称、连接节点、器件类型和器件属性四部分
         comp_name, nodes, comp_type, attributes = parse_netlist_line(line)
 
         # Replace and evaluate attribute values based on the provided dictionary
