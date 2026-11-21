@@ -26,6 +26,7 @@ if __name__ == "__main__":
     print("[INFO] Loaded split indices from data_splits.npz")
 
     print("[INFO] Loading base dataset...")
+    # 只有原始Test样本额外拥有flat_edge_attrs
     full_dataset = CircuitGraphDataset(root_dir, circuit_to_code, global_perf_list, edge_attr_indices=test_idx)
     print(f"[INFO] Total samples in dataset: {len(full_dataset)}")
 

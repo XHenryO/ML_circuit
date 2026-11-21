@@ -6,12 +6,16 @@ from tqdm import tqdm
 
 
 def fit_performance_scaler_ignore_zeros(full_dataset, indices, perf_dim=16):
+    # 一个包含 16 个空列表的列表
     perf_values = [[] for _ in range(perf_dim)]
 
+    # tqdm()只是显示循环进度条
     for i in tqdm(indices, desc="Creating Scalers", leave=False):
+        # y_performance是个一行16列的二维tensor， 包含所有perf metric的值， view和numpy负责降维和处理数据类型
         perf = full_dataset[i].y_performance.view(-1).numpy()
         for j in range(perf_dim):
             if perf[j] != 0.0:
+                # perf_values储存了所有样本的performance的数值，为之后运算
                 perf_values[j].append(perf[j])
 
     # Fit separate scaler per dimension
@@ -20,6 +24,7 @@ def fit_performance_scaler_ignore_zeros(full_dataset, indices, perf_dim=16):
         values = np.array(perf_values[j]).reshape(-1, 1)
         scaler = StandardScaler()
         scaler.fit(values)
+        # 这里的scalar包含mean, var, std/scale, number of items
         scalers.append(scaler)
 
     return scalers

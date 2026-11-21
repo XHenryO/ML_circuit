@@ -13,8 +13,8 @@ from utils.io_tools import load_yaml
 if __name__ == "__main__":
     root_dir = "dataset"
     config = load_yaml(os.path.join("config", "data_config.yaml"))
-    global_perf_list = list(config["Performance"].keys())
-    circuit_to_code = config["Classes"]
+    global_perf_list = list(config["Performance"].keys())   # 只拿key
+    circuit_to_code = config["Classes"]  # 全拿，是个字典
 
     print("[INFO] Loading base dataset...")
     full_dataset = CircuitGraphDataset(root_dir, circuit_to_code, global_perf_list)
@@ -29,7 +29,9 @@ if __name__ == "__main__":
 
     print("[INFO] Creating + fitting scaler on train set...")
     train_dataset = PerformanceToClassWithPerMetricScaler(full_dataset, train_idx)
+    # 这里的scalar包含对于train_dataset的mean, var, std/scale, number of items
     scaler = train_dataset.scaler
+    # 就是单纯保存文件到performance_scaler_mlp.pkl
     joblib.dump(scaler, os.path.join(root_dir, "performance_scaler_mlp.pkl"))
     print("[INFO] Saved scaler to performance_scaler_mlp.pkl")
 
@@ -38,6 +40,7 @@ if __name__ == "__main__":
     test_dataset = PerformanceToClassWithPerMetricScaler(full_dataset, test_idx, scaler=scaler)
 
     # Convert to tensors
+    # 对应单个样本，这里的x,y分别是标准化后的16个perf metrics 和对应的circuit_type_code
     train_samples = [(x, y) for x, y in train_dataset]
     val_samples = [(x, y) for x, y in val_dataset]
     test_samples = [(x, y) for x, y in test_dataset]
