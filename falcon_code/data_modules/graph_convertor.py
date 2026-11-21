@@ -17,21 +17,55 @@ def networkx_to_pyg(nx_graph):
                - Dictionary of all attributes (numeric & string)
     """
     # Map node names to indices
+    # nx_graph.nodes()：获取所有已经存在的节点
+    # enumerate(nx_graph.nodes()) 给每个节点编号
+    # node_mapping = {
+    #     "Vin": 0,
+    #     "net1": 1,
+    #     "GND": 2,
+    #     "Vout": 3
+    # }
     node_mapping = {node: i for i, node in enumerate(nx_graph.nodes())}
 
     # Create node feature tensor (Modify if real features exist)
+    # [[0], [1], [2], [3], ..., [n]]
+    # tensor就是适合机器学习的多维数组
     x = torch.tensor([[i] for i in range(len(nx_graph.nodes()))], dtype=torch.float)
 
     edge_index = []
     edge_attr_dict = {}  # Dictionary to store all attributes
 
+    # u是edge连接的第一个节点
+    # v是edge连接的第二个节点
+    # key是用来区分同意对节点之间不同边的编号, 由 NetworkX 的 MultiGraph 自动分配的
+    # data就是这条边带有的所有属性, name. component, attr
     for u, v, key, data in nx_graph.edges(keys=True, data=True):
+        # 之前node_mapping已经让node与数字联系起来, 现在则是把原先node的描述方式用对应数字表达
+        # edge_index = [
+        #     [0, 1],
+        #     [0, 1],
+        #     [1, 2]
+        # ]
         edge_index.append([node_mapping[u], node_mapping[v]])  # Convert nodes to indices
 
         # Store all attributes (numeric and string) together
+        # edge_attr_dict = {
+        #     (0, 1, 0): {
+        #         "name": "R1",
+        #         "component": "resistor",
+        #         "r": 100
+        #     },
+        #
+        #     (0, 1, 1): {
+        #         "name": "R2",
+        #         "component": "resistor",
+        #         "r": 200
+        #     }
+        # }
         edge_attr_dict[(node_mapping[u], node_mapping[v], key)] = data.copy()
 
     # Convert edge_index to tensor
+    # 通过.t()专制后再变为tensor, 相当于两行分别保存每条边的两个端点，而不是每行保存一条边
     edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
 
     # Create PyTorch Geometric Data object

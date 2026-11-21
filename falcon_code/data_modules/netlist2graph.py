@@ -290,6 +290,7 @@ def netlist_to_graph(netlist_content, values):
         if line.startswith('//') or line.strip() == '':
             continue
 
+        # 可以看到这里他是以component为主体
         # Parse the line into component name, nodes, type, and attributes   把一整行 Netlist 拆解成器件名称、连接节点、器件类型和器件属性四部分
         comp_name, nodes, comp_type, attributes = parse_netlist_line(line)
 
@@ -297,6 +298,10 @@ def netlist_to_graph(netlist_content, values):
         updated_attributes = replace_values_and_evaluate(attributes, values)
 
         # Categorize the updated attributes into numeric, parametric, and computation dictionaries
+        # 为了方便后续构建GNN的边特征
+        # - numeric_dict：直接使用固定值
+        # - parametric_dict：后续从dataset.csv获取对应的设计参数
+        # - computation_dict：后续代入设计参数，计算表达式
         numeric_dict, parametric_dict, computation_dict = categorize_attributes(updated_attributes)
 
         # if numeric_dict != {}:
@@ -307,6 +312,7 @@ def netlist_to_graph(netlist_content, values):
         #     print(computation_dict)
 
         # Normalize node names by removing backslashes
+        # 将有可能的反斜杠都删了
         for idx in range(len(nodes)):
             nodes[idx] = nodes[idx].replace('\\', '')
 
@@ -322,6 +328,8 @@ def netlist_to_graph(netlist_content, values):
                     
                     if comp_type == 'nmos' or comp_type == 'pmos':
                         # Skip invalid connections for nmos and pmos components
+                        # 因为该Netlist的MOS端口顺序是：(D G S B)索引3对应Bulk;
+                        # falcon不表示bulk边?
                         if j == 3:
                             continue
                         # Append specific labels to comp_type based on the indices (i, j)
